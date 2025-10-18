@@ -1,6 +1,16 @@
 #pragma once
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+#include <cstdint>
+#include <cstdlib>
+#include <ctime>
+#include <memory>
 #include <ostream>
 #include <random>
+#include <string>
+#include <type_traits>
+#include <typeinfo>
 
 // Set the defintion of the type Real
 #ifndef REAL_PRECISION
