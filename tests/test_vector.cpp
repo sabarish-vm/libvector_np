@@ -1,10 +1,7 @@
 #include "../include/vector.hpp"
-#include <cstdint>
 #include <random>
-#include <vector>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
-#include <typeinfo>
 
 TEST_CASE("Vector Basic Operations") {
     {
