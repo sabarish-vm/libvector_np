@@ -23,7 +23,7 @@
     #define REAL_TYPE long double
 #endif
 using Real = REAL_TYPE;
-// end of Real
+// end of setting Real
 
 /* Global forward declarations
 declarations added here as when required */
@@ -41,7 +41,9 @@ namespace Vector {
 };
 // End of foward declarations
 
-inline Real log_base(Real a, Real base) {
+template <typename T, typename U>
+inline Real log_base(T a, T base) {
+    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>, "Type passed must be a arithmetic type");
     return std::log(a) / std::log(base);
 }
 
@@ -190,7 +192,7 @@ namespace Vector {
             return res;
         }
 
-        // Constructor methods
+        // Constructor methods begins here
         RVector<T>() : size(0),v(NULL) {};
 
         RVector<T>(std::initializer_list<T> initList) : size(initList.size()), v(std::make_unique<T[]>(initList.size())) {
@@ -224,14 +226,33 @@ namespace Vector {
                 v[i] = arr[i];
             }
         }
+        RVector<T>(const uint32_t N, const std::unique_ptr<T[]>& arr ) : size(N), v(std::make_unique<T[]>(N)) {
+            for (uint32_t i = 0 ; i < N ; i++) {
+                v[i] = arr[i];
+            }
+        }
+        // Constructor that obeys std::move semantics
+        RVector<T>(const uint32_t N, std::unique_ptr<T[]>&& arr ) noexcept 
+            : size(N), v(std::move(arr))  {}
 
-        // Member functions
+        // Constructor methods end here
+ 
+        // Member functions start here
         T sum() {
             T value = 0;
             for (std::uint32_t i = 0 ; i<size ; i++){
                 value += v[i];
             }
             return value;
+        }
+
+        template<typename U>
+        auto pow(const U& exponent) {
+            auto res = RVector<typename RealOrInt<T, U>::type>(size);
+            for (uint32_t i=0 ; i<size ; i++) {
+                res[i] = std::pow(v[i],exponent);
+            }
+            return res;
         }
 
         Real L2norm() {
@@ -363,4 +384,29 @@ namespace Vector {
             }
     return vec;
     };
+
+    template<typename T>
+    RVector<Real> LinSpace(const T min, const T max, const uint32_t n){
+        RVector<Real> vec(n);
+        Real spacing = ( max - min ) / (n-1);
+            for (uint32_t i = 0 ; i < n ; i++){
+                vec[i] = min + i * spacing;
+            }
+        return vec;
+    };
+
+    template<typename T>
+    RVector<Real> GeomSpace(const T min, const T max, const uint32_t n, const T base){
+
+    Real logmin = log_base(min, base);
+    Real logmax = log_base(max, base);
+    RVector<Real> vec(n);
+    Real spacing = ( logmax - logmin ) / (n-1);
+        for (uint32_t i = 0 ; i < n ; i++){
+            Real _exp = logmin + i * spacing;
+            vec[i] = std::pow(base, _exp);
+        }
+    return vec;
+    };
+
 };
