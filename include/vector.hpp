@@ -243,6 +243,20 @@ namespace Vector {
             return value;
         }
 
+        RVector<T> sqrt() {
+            RVector<T> value(size) ;
+            for (std::uint32_t i = 0 ; i < size ; i++){
+                auto x = v[i];
+                if (x<0) {
+                    throw("Sqrt of negative values not supported");
+                }
+                else {
+                value[i] = std::sqrt(x);
+                }
+            }
+            return value;
+        }
+
         template<typename U>
         auto pow(const U& exponent) {
             auto res = RVector<typename RealOrInt<T, U>::type>(size);
@@ -394,16 +408,15 @@ namespace Vector {
 
     template<typename T>
     RVector<Real> GeomSpace(const T min, const T max, const uint32_t n, const T base){
-
-    Real logmin = log_base(min, base);
-    Real logmax = log_base(max, base);
-    RVector<Real> vec(n);
-    Real spacing = ( logmax - logmin ) / (n-1);
-        for (uint32_t i = 0 ; i < n ; i++){
-            Real _exp = logmin + i * spacing;
-            vec[i] = std::pow(base, _exp);
-        }
-    return vec;
+        Real logmin = log_base(min, base);
+        Real logmax = log_base(max, base);
+        RVector<Real> vec(n);
+        Real spacing = ( logmax - logmin ) / (n-1);
+            for (uint32_t i = 0 ; i < n ; i++){
+                Real _exp = logmin + i * spacing;
+                vec[i] = std::pow(base, _exp);
+            }
+        return vec;
     };
 
 };
