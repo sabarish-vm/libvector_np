@@ -12,19 +12,7 @@
 #include <type_traits>
 #include <typeinfo>
 
-// Set the defintion of the type Real
-#ifndef REAL_PRECISION
-#define REAL_PRECISION 1
-#endif
-
-#if REAL_PRECISION == 1
-    #define REAL_TYPE double
-#elif REAL_PRECISION ==2
-    #define REAL_TYPE long double
-#endif
-using Real = REAL_TYPE;
-// end of setting Real
-
+#include "vector_incl/REAL.hpp"
 /* Global forward declarations
 declarations added here as when required */
 namespace Vector {
@@ -34,25 +22,33 @@ namespace Vector {
     template <typename T>
     RVector<T> RandRVector(const uint32_t n, const T min, const T max);
 
-    RVector<Real> LinSpace(const Real min, const Real max, const uint32_t n);
-
-
-    RVector<Real> GeomSpace(const Real min, const Real max, const uint32_t n, const Real base);
 };
 // End of foward declarations
 
+// Define trait bounds aka concepts from ++20, but we stick ++17 for now
+template <typename T>
+constexpr bool is_a_number =
+    std::is_floating_point_v<T> ||
+    std::is_integral_v<T> &&       // Ensures it's an integer type
+    !std::is_same_v<T, bool> &&    // Exclude bool
+    !std::is_same_v<T, char> &&    // Exclude chars
+    !std::is_enum_v<T>;            // Exclude enums
+//
+
 template <typename T, typename U>
-inline Real log_base(T a, T base) {
-    static_assert(std::is_arithmetic_v<T> && std::is_arithmetic_v<U>, "Type passed must be a arithmetic type");
+inline Real log_base(T a, U base) {
+    static_assert(::is_a_number<T> && ::is_a_number<U>, "Type passed must be a arithmetic type");
     return std::log(a) / std::log(base);
 }
 
 // Struct to infer and return Real or Integer
 template <typename A, typename B>
 struct RealOrInt{
-using type = std::conditional_t<std::is_same_v<A, Real>, Real,
-                            std::conditional_t<std::is_same_v<B, Real>, Real, int>>;
+static_assert(::is_a_number<A> && ::is_a_number<B>, "Type passed must be a arithmetic type");
+using type = std::conditional_t<std::is_same_v<A, Real> || std::is_same_v<B, Real>,
+                                Real, int>;
 };
+
 
 // New type trait struct for RVector class
 template <typename T>
@@ -94,6 +90,7 @@ namespace Vector {
     template <typename T>
     class RVector {
     public:
+        static_assert(::is_a_number<T>, "Type passed must be a arithmetic type");
         bool integral = std::is_integral<T>::value;
         std::uint32_t size;
         std::string value_type =  typeid(T).name();
