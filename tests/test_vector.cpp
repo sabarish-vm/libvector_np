@@ -1,10 +1,15 @@
 #include "../include/vector.hpp"
-#include <cassert>
-#include <cstddef>
 #include <memory>
 #include <random>
+#include <cmath>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
+
+const double PI = 3.14159265358979323846264338;
+
+double wrap_sin(double& x) {
+    return std::sin(x);
+}
 
 TEST_CASE("Vector Basic Operations") {
     {// Check type boundness
@@ -40,7 +45,7 @@ TEST_CASE("Vector Basic Operations") {
 
     {
         // Ensure that for a raw pointer, the contents are copied and moved
-        int* raw_ptr = new int(2);
+        int* raw_ptr = new int[2];
         raw_ptr[0] =1;
         raw_ptr[1] =2;
         // Ensure that move does nothing
@@ -154,11 +159,20 @@ TEST_CASE("Vector Basic Operations") {
         CHECK( *(typeid(vM[0]).name()) == 'd');
         CHECK(vD[0]==1./3.0);
 
+        // Power function
         auto viPi = v1.pow(3);
         auto viPd = v1.pow(double(3));
         CHECK(viPi[1]==8);
         CHECK(viPi.value_type == "i");
         CHECK(viPd.value_type == "d");
+    }
+    {
+        // Apply method
+        auto x = Vector::RVector<double>({0.,PI/4,PI/2,3*PI/2,PI,2*PI});
+        auto y = x.apply<+wrap_sin>();
+        auto sinx = Vector::RVector<double>({0,0.70710678,1.0,-1.0,0.0,0.0});
+
+        CHECK(y.isclose(sinx,1e-6,1e-3));
     }
 }
 

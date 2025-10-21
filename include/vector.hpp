@@ -301,6 +301,15 @@ namespace Vector {
             return minval;
         }
 
+        template<T (*func)(T&)>
+        RVector<T> apply() {
+            RVector<T> res(size);
+            for(uint32_t i = 0 ; i < size ; i++) {
+                res[i] = func(v[i]);
+            }
+        return res;
+        }
+
         inline T* data_ptr() {
             return v.get();
         }
@@ -309,7 +318,7 @@ namespace Vector {
         template<typename U>
         typename RealOrInt<T,U>::type dot(RVector<U> &rhs){
             Real result=0.;
-            if (rhs.size == this->size) {
+            if (rhs.size == size) {
                 for (uint32_t i = 0 ; i< size ; i++) {
                     result += v[i] * rhs[i];
                 }
@@ -321,7 +330,7 @@ namespace Vector {
         };
 
         template<typename U>
-        bool isclose(const RVector<U> &rhs, Real atol = 0 , Real rtol = 1e-3) {
+        bool isclose(const RVector<U> &rhs, Real atol = 1e-10 , Real rtol = 1e-3) {
         // Check integral nature at compile time
             if constexpr ( std::is_integral<T>::value && std::is_integral<U>::value){
                 // Check if both vectors are of same sub-integral type
@@ -329,9 +338,9 @@ namespace Vector {
                     // Check sizes at run time
                     if (this->size == rhs.size) {
                         for (std::uint32_t i = 0 ; i< size ; i++) {
-                            const T a = this->v[i];
+                            const T a = v[i];
                             const U b = rhs[i];
-                            if (a != b){
+                            if (std::abs(a - b) > atol + rtol * std::abs(b)){
                                 return false;
                             }
                         }
@@ -342,9 +351,9 @@ namespace Vector {
                 // if not cast both the integral types to int
                 else {
                     for (std::uint32_t i = 0 ; i< size ; i++) {
-                        const T a = static_cast<int>(this->v[i]);
+                        const T a = static_cast<int>(v[i]);
                         const U b = static_cast<int>(rhs[i]);
-                        if (a != b){
+                        if (std::abs(a - b) > atol + rtol * std::abs(b)){
                             return false;
                         }
                     }
@@ -354,11 +363,11 @@ namespace Vector {
             // if types are very different convert both to Real
             else {
                 for (uint32_t i =0 ; i< size ; i++){
-                    const Real a = (Real)(this->v[i]);
+                    const Real a = (Real)(v[i]);
                     const Real b = (Real)(rhs[i]);
-                    if (std::abs(a - b) > atol + rtol * b){
+                    if (std::abs(a - b) > atol + rtol * std::abs(b)){
                         return false;
-                        }
+                    }
                 }
                 return true;
             }
@@ -370,7 +379,6 @@ namespace Vector {
         RVector<T> vec(n);
         std::random_device rd;  // Obtain a random seed
         std::mt19937 gen(rd()); // Mersenne Twister random number engine seeded with rd
-        std::uniform_int_distribution<> distrib(min, max); // Uniform distribution between min and max inclusive
         if constexpr (std::is_integral<T>::value) {
             std::uniform_int_distribution<> distrib(min, max); // Uniform distribution between min and max inclusive
             for (uint32_t i = 0 ; i < n ; i++){
