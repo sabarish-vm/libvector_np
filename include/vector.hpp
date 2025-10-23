@@ -1,10 +1,8 @@
 #pragma once
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <cstdint>
 #include <cstdlib>
-#include <ctime>
 #include <memory>
 #include <ostream>
 #include <random>
@@ -301,7 +299,16 @@ namespace Vector {
             return minval;
         }
 
-        template<T (*func)(T&)>
+        template<T (*func)(const T)>
+        RVector<T> apply() {
+            RVector<T> res(size);
+            for(uint32_t i = 0 ; i < size ; i++) {
+                res[i] = func(v[i]);
+            }
+        return res;
+        }
+
+        template<T (*func)(const T&)>
         RVector<T> apply() {
             RVector<T> res(size);
             for(uint32_t i = 0 ; i < size ; i++) {

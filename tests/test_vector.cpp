@@ -7,10 +7,6 @@
 
 const double PI = 3.14159265358979323846264338;
 
-double wrap_sin(double& x) {
-    return std::sin(x);
-}
-
 TEST_CASE("Vector Basic Operations") {
     {// Check type boundness
         // Vector::RVector<char> nullvec;
@@ -169,10 +165,16 @@ TEST_CASE("Vector Basic Operations") {
     {
         // Apply method
         auto x = Vector::RVector<double>({0.,PI/4,PI/2,3*PI/2,PI,2*PI});
-        auto y = x.apply<+wrap_sin>();
         auto sinx = Vector::RVector<double>({0,0.70710678,1.0,-1.0,0.0,0.0});
+        // Uses lambda function
+        auto fsin = [](const double& a )->double {return std::sin(a);};
+        auto y = x.apply<+fsin>();
+        // Static cast
+        constexpr auto f3 = static_cast<double (*) (const double)>(std::sin);
+        auto y2 = x.apply<f3>();
 
         CHECK(y.isclose(sinx,1e-6,1e-3));
+        CHECK(y2.isclose(sinx,1e-6,1e-3));
     }
 }
 
