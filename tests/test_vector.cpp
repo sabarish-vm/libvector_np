@@ -1,4 +1,7 @@
 // Copyright (c) 2025 Sabarish. All Rights Reserved.
+// This file is part of libvector_np, licensed under the GNU General
+// Public License. See the LICENSE file included with this distribution
+// for details.
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>

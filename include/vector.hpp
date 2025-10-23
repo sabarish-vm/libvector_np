@@ -1,7 +1,10 @@
+// Copyright (c) 2025 Sabarish. All Rights Reserved.
+// This file is part of libvector_np, licensed under the GNU General
+// Public License. See the LICENSE file included with this distribution
+// for details.
 #pragma once
 #include <algorithm>
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <ostream>
