@@ -442,4 +442,30 @@ RVector<Real> GeomSpace(const T min, const T max, const _size_t n,
   return vec;
 }
 
+template <typename T>
+RVector<T> ZerosLike(const RVector<T>& rhs) {
+  RVector<T> res(rhs.size);
+  return res;
+}
+
+template <typename T>
+RVector<T> OnesLike(const RVector<T>& rhs) {
+  T one = 1.0;
+  RVector<T> res(rhs.size, one);
+  return res;
+}
+
+template <typename T, typename U>
+auto Concat(const RVector<T>& v1, const RVector<U>& v2) {
+  _size_t full_size = v1.size + v2.size;
+  RVector<typename RealOrInt<T, U>::type> result(full_size);
+  for (_size_t i = 0; i < v1.size; i++) {
+    result[i] = v1[i];
+  }
+  for (_size_t i = 0; i < v2.size; i++) {
+    result[i + v1.size] = v2[i];
+  }
+  return result;
+}
+
 };  // namespace Vector

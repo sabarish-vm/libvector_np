@@ -15,6 +15,17 @@
 #include "../include/vector.hpp"
 const double PI = 3.14159265358979323846264338;
 
+template <typename T, typename U>
+double isclose(T const& a1, U const& a2) {
+  double a = a1;
+  double b = a2;
+  double atol = 1e-16;
+  double rtol = 1e-16;
+  auto diff = std::abs(a - b);
+  bool ret = diff < (atol + rtol * std::abs(b));
+  return ret;
+}
+
 TEST_CASE("Vector Basic Operations") {
   {  // Check type boundness
      // Vector::RVector<char> nullvec;
@@ -184,5 +195,12 @@ TEST_CASE("Vector Basic Operations") {
 
     CHECK(y.isclose(sinx, 1e-6, 1e-3));
     CHECK(y2.isclose(sinx, 1e-6, 1e-3));
+  }
+  {  // Test Concatenation
+    auto x = Vector::RVector<int>({0, 1, 2, 3});
+    auto y = Vector::RVector<double>({4, 5, 6, 7});
+    auto z = Vector::Concat(x, y);
+    CHECK(::isclose(*(x.begin()), *(z.begin())));
+    CHECK(::isclose(*(y.end()), *(z.end())));
   }
 }
