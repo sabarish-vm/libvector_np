@@ -32,7 +32,7 @@ TEST_CASE("Vector Basic Operations") {
   }
   {
     Vector::RVector<double> nullvec;
-    CHECK_EQ(nullvec.size, 0);
+    CHECK_EQ(nullvec.size(), 0);
   }
 
   {
@@ -54,7 +54,7 @@ TEST_CASE("Vector Basic Operations") {
     Vector::RVector<int> copyRandomSize(randomSize);
     Vector::RVector<int>* prandSize = &randomSize;
     Vector::RVector<int>* pCopyRandSize = &copyRandomSize;
-    CHECK_EQ(randomSize.size, copyRandomSize.size);
+    CHECK_EQ(randomSize.size(), copyRandomSize.size());
     CHECK_NE(prandSize, pCopyRandSize);
   }
 
@@ -113,7 +113,7 @@ TEST_CASE("Vector Basic Operations") {
   {
     // testing LinSpace
     auto linspaceVec = Vector::LinSpace(1.0, 4.0, 4);
-    CHECK_EQ(linspaceVec.size, 4);
+    CHECK_EQ(linspaceVec.size(), 4);
     CHECK_EQ(linspaceVec[0], 1.0);
     CHECK_EQ(linspaceVec[3], 4.0);
   }
@@ -121,7 +121,7 @@ TEST_CASE("Vector Basic Operations") {
   {
     // testing Arange
     auto arangeVec = Vector::Arange(1, 3, 1);
-    CHECK_EQ(arangeVec.size, 2);
+    CHECK_EQ(arangeVec.size(), 2);
     CHECK_EQ(arangeVec[0], 1);
     CHECK_EQ(arangeVec[1], 2);
   }
@@ -140,7 +140,7 @@ TEST_CASE("Vector Basic Operations") {
         CHECK(elem == resdata[i]);
         i++;
       }
-      CHECK(i == resGeomSpace.size);
+      CHECK(i == resGeomSpace.size());
     }
   }
 

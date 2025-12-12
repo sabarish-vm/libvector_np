@@ -94,12 +94,12 @@ class RVector {
  public:
   static_assert(::is_a_number<T>, "Type passed must be a arithmetic type");
   bool integral = std::is_integral<T>::value;
-  _size_t size;
   std::string value_type = typeid(T).name();
   using generic_type = T;
   /* generic_type is accessible at compile time since it is initialized
    * with keyword 'using'*/
  private:
+  _size_t _size;
   /* keeping variable v as private member ensures that the user of the
    * libary cannot directly access v[i].
    * This ensures that out-of-bounds error are kept at bay.
@@ -117,9 +117,9 @@ class RVector {
       using return_type = std::conditional_t<
           op == ArithmeticOpType::DIV, Real,
           typename RealOrInt<T, typename U::generic_type>::type>;
-      RVector<return_type> res(size);
-      if (rhs.size == size) {
-        for (_size_t i = 0.0; i < size; i++) {
+      RVector<return_type> res(_size);
+      if (rhs.size() == _size) {
+        for (_size_t i = 0.0; i < _size; i++) {
           // typename U::generic_type tells the compiler that U::generic_type
           // is a typename that is a template parameter and is a typename
           res[i] = math_operator<T, typename U::generic_type, return_type, op>(
@@ -130,8 +130,8 @@ class RVector {
         throw("Sizes of vectors do not match");
       }
     } else {
-      RVector<typename RealOrInt<T, U>::type> res(size);
-      for (_size_t i = 0.0; i < size; i++) {
+      RVector<typename RealOrInt<T, U>::type> res(_size);
+      for (_size_t i = 0.0; i < _size; i++) {
         res[i] = math_operator<T, U, Real, op>(v[i], rhs);
       }
       return res;
@@ -139,24 +139,25 @@ class RVector {
   }
 
  public:
+  _size_t size() const { return _size; }
   // begin and end methods for enabling ranged loop
   T* begin() { return v.get(); }
-  T* end() { return (v.get() + size); }
+  T* end() { return (v.get() + _size); }
 
   const T* begin() const { return v.get(); }
-  const T* end() const { return (v.get() + size); }
+  const T* end() const { return (v.get() + _size); }
   // end of this section
 
   // Operator overloads
   inline T& operator[](const _size_t i) {
-    if (i >= size) {
+    if (i >= _size) {
       throw("Rvector subscript out of bounds");
     }
     return v[i];
   }
 
   inline const T& operator[](const std::size_t i) const {
-    if (i >= size) {
+    if (i >= _size) {
       throw("Rvector subscript out of bounds");
     }
     return v[i];
@@ -164,7 +165,7 @@ class RVector {
 
   friend inline std::ostream& operator<<(std::ostream& os,
                                          const RVector<T>& vec) {
-    for (_size_t i = 0; i < vec.size; i++) {
+    for (_size_t i = 0; i < vec._size; i++) {
       os << vec[i] << ' ';
     }
     os << std::endl;
@@ -196,10 +197,10 @@ class RVector {
   }
 
   // Constructor methods begins here
-  RVector<T>() : size(0), v(NULL) {}
+  RVector<T>() : _size(0), v(NULL) {}
 
   explicit RVector<T>(std::initializer_list<T> initList)
-      : size(initList.size()), v(std::make_unique<T[]>(initList.size())) {
+      : _size(initList.size()), v(std::make_unique<T[]>(initList.size())) {
     _size_t i = 0;
     for (const auto& elem : initList) {
       v[i] = elem;
@@ -207,56 +208,56 @@ class RVector {
     }
   }
 
-  explicit RVector<T>(const _size_t N) : size(N), v(std::make_unique<T[]>(N)) {
-    for (_size_t i = 0; i < size; i++) {
+  explicit RVector<T>(const _size_t N) : _size(N), v(std::make_unique<T[]>(N)) {
+    for (_size_t i = 0; i < _size; i++) {
       v[i] = 0;
     }
   }
 
   RVector<T>(const _size_t N, const T& a)
-      : size(N), v(std::make_unique<T[]>(N)) {
-    for (_size_t i = 0; i < size; i++) {
+      : _size(N), v(std::make_unique<T[]>(N)) {
+    for (_size_t i = 0; i < _size; i++) {
       v[i] = a;
     }
   }
 
   RVector<T>(const RVector<T>& rhs)
-      : size(rhs.size), v(std::make_unique<T[]>(rhs.size)) {
-    for (_size_t i = 0; i < size; i++) {
+      : _size(rhs.size()), v(std::make_unique<T[]>(rhs.size())) {
+    for (_size_t i = 0; i < _size; i++) {
       v[i] = rhs[i];
     }
   }
 
   RVector<T>(const _size_t N, const T* arr)
-      : size(N), v(std::make_unique<T[]>(N)) {
+      : _size(N), v(std::make_unique<T[]>(N)) {
     for (_size_t i = 0; i < N; i++) {
       v[i] = arr[i];
     }
   }
   RVector<T>(const _size_t N, const std::unique_ptr<T[]>& arr)
-      : size(N), v(std::make_unique<T[]>(N)) {
+      : _size(N), v(std::make_unique<T[]>(N)) {
     for (_size_t i = 0; i < N; i++) {
       v[i] = arr[i];
     }
   }
   // Constructor that obeys std::move semantics
   RVector<T>(const _size_t N, std::unique_ptr<T[]>&& arr) noexcept
-      : size(N), v(std::move(arr)) {}
+      : _size(N), v(std::move(arr)) {}
 
   // Constructor methods end here
 
   // Member functions start here
   T sum() {
     T value = 0;
-    for (_size_t i = 0; i < size; i++) {
+    for (_size_t i = 0; i < _size; i++) {
       value += v[i];
     }
     return value;
   }
 
   RVector<T> sqrt() {
-    RVector<T> value(size);
-    for (_size_t i = 0; i < size; i++) {
+    RVector<T> value(_size);
+    for (_size_t i = 0; i < _size; i++) {
       auto x = v[i];
       if (x < 0) {
         throw("Sqrt of negative values not supported");
@@ -269,8 +270,8 @@ class RVector {
 
   template <typename U>
   auto pow(const U& exponent) {
-    auto res = RVector<typename RealOrInt<T, U>::type>(size);
-    for (_size_t i = 0; i < size; i++) {
+    auto res = RVector<typename RealOrInt<T, U>::type>(_size);
+    for (_size_t i = 0; i < _size; i++) {
       res[i] = std::pow(v[i], exponent);
     }
     return res;
@@ -278,7 +279,7 @@ class RVector {
 
   Real L2norm() {
     Real norm = 0.0;
-    for (_size_t i = 0; i < size; i++) {
+    for (_size_t i = 0; i < _size; i++) {
       norm += v[i] * v[i];
     }
     norm = std::sqrt(norm);
@@ -287,13 +288,13 @@ class RVector {
 
   RVector<T> sort() {
     RVector<T> copy_vec(*this);
-    std::sort(copy_vec.v.get(), copy_vec.v.get() + copy_vec.size);
+    std::sort(copy_vec.v.get(), copy_vec.v.get() + copy_vec.size());
     return copy_vec;
   }
 
   T max() {
     T maxval = v[0];
-    for (_size_t i = 1; i < size; i++) {
+    for (_size_t i = 1; i < _size; i++) {
       if (v[i] > maxval) {
         maxval = v[i];
       }
@@ -303,7 +304,7 @@ class RVector {
 
   T min() {
     T minval = v[0];
-    for (_size_t i = 1; i < size; i++) {
+    for (_size_t i = 1; i < _size; i++) {
       if (v[i] < minval) {
         minval = v[i];
       }
@@ -313,8 +314,8 @@ class RVector {
 
   template <T (*func)(const T)>
   RVector<T> apply() {
-    RVector<T> res(size);
-    for (_size_t i = 0; i < size; i++) {
+    RVector<T> res(_size);
+    for (_size_t i = 0; i < _size; i++) {
       res[i] = func(v[i]);
     }
     return res;
@@ -322,8 +323,8 @@ class RVector {
 
   template <T (*func)(const T&)>
   RVector<T> apply() {
-    RVector<T> res(size);
-    for (_size_t i = 0; i < size; i++) {
+    RVector<T> res(_size);
+    for (_size_t i = 0; i < _size; i++) {
       res[i] = func(v[i]);
     }
     return res;
@@ -334,8 +335,8 @@ class RVector {
   template <typename U>
   typename RealOrInt<T, U>::type dot(RVector<U>& rhs) {
     Real result = 0.;
-    if (rhs.size == size) {
-      for (_size_t i = 0; i < size; i++) {
+    if (rhs.size() == _size) {
+      for (_size_t i = 0; i < _size; i++) {
         result += v[i] * rhs[i];
       }
     } else {
@@ -351,8 +352,8 @@ class RVector {
       // Check if both vectors are of same sub-integral type
       if constexpr (std::is_same<T, U>::value) {
         // Check sizes at run time
-        if (this->size == rhs.size) {
-          for (_size_t i = 0; i < size; i++) {
+        if (this->_size == rhs.size()) {
+          for (_size_t i = 0; i < _size; i++) {
             const T a = v[i];
             const U b = rhs[i];
             if (std::abs(a - b) > atol + rtol * std::abs(b)) {
@@ -364,7 +365,7 @@ class RVector {
           throw("Cannot compare RVectors of different sizes");
         }
       } else {  // if not cast both the integral types to int
-        for (_size_t i = 0; i < size; i++) {
+        for (_size_t i = 0; i < _size; i++) {
           const T a = static_cast<int>(v[i]);
           const U b = static_cast<int>(rhs[i]);
           if (std::abs(a - b) > atol + rtol * std::abs(b)) {
@@ -374,7 +375,7 @@ class RVector {
         return true;
       }
     } else {  // if types are very different convert both to Real
-      for (_size_t i = 0; i < size; i++) {
+      for (_size_t i = 0; i < _size; i++) {
         const Real a = (Real)(v[i]);
         const Real b = (Real)(rhs[i]);
         if (std::abs(a - b) > atol + rtol * std::abs(b)) {
@@ -444,26 +445,26 @@ RVector<Real> GeomSpace(const T min, const T max, const _size_t n,
 
 template <typename T>
 RVector<T> ZerosLike(const RVector<T>& rhs) {
-  RVector<T> res(rhs.size);
+  RVector<T> res(rhs.size());
   return res;
 }
 
 template <typename T>
 RVector<T> OnesLike(const RVector<T>& rhs) {
   T one = 1.0;
-  RVector<T> res(rhs.size, one);
+  RVector<T> res(rhs.size(), one);
   return res;
 }
 
 template <typename T, typename U>
 auto Concat(const RVector<T>& v1, const RVector<U>& v2) {
-  _size_t full_size = v1.size + v2.size;
+  _size_t full_size = v1.size() + v2.size();
   RVector<typename RealOrInt<T, U>::type> result(full_size);
-  for (_size_t i = 0; i < v1.size; i++) {
+  for (_size_t i = 0; i < v1.size(); i++) {
     result[i] = v1[i];
   }
-  for (_size_t i = 0; i < v2.size; i++) {
-    result[i + v1.size] = v2[i];
+  for (_size_t i = 0; i < v2.size(); i++) {
+    result[i + v1.size()] = v2[i];
   }
   return result;
 }
